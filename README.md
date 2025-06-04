@@ -41,9 +41,8 @@ Kedua pendekatan ini dipilih karena saling melengkapi: Content-Based Filtering u
 
 ## Data Understanding
 
-Dataset yang digunakan dalam proyek ini merupakan data anime dan rating yang dikumpulkan dari sumber MyAnimeList melalui Kaggle. Dataset ini terdiri dari dua file utama:
-- anime.csv — berisi informasi metadata mengenai setiap anime.
-- rating.csv — berisi informasi rating yang diberikan pengguna terhadap anime.
+Dataset ini sangat cocok untuk eksplorasi data, pembangunan model rekomendasi berbasis pembelajaran mesin, serta pemahaman pola preferensi pengguna terhadap berbagai genre dan jenis anime.
+- Anime User Rating and Metadata for Recommendation System: [Kaggle](https://www.kaggle.com/datasets/CooperUnion/anime-recommendations-database/).
 Secara keseluruhan:
 - anime.csv berisi lebih dari 12.000 judul anime.
 - rating.csv mencakup lebih dari 7 juta entri rating dari lebih dari 70.000 pengguna.
@@ -70,52 +69,107 @@ Secara keseluruhan:
 | `rating`   | Nilai rating yang diberikan pengguna. Skala 1 sampai 10, atau -1 jika pengguna belum memberikan rating. |
 
 **Visualisasi dan Analisis Data (EDA)**
-Beberapa teknik visualisasi dilakukan untuk memahami distribusi dan pola data:
-1. Distribusi Rating
-Sebagian besar rating pengguna berada di rentang 6 hingga 8, menunjukkan kecenderungan pengguna untuk memberikan rating moderat hingga positif. Rating -1 cukup banyak dan dihapus dalam tahap pemrosesan karena tidak mewakili preferensi pengguna.
-2. Distribusi Anime per Genre
-Genre dengan jumlah anime terbanyak antara lain:
-- Action
-- Comedy
-- Adventure
-- Drama
-Hal ini menunjukkan dominasi genre-genre populer dalam katalog anime dan menjadi dasar penting dalam pendekatan content-based filtering.
-3. Episode vs. Jumlah Member
-Anime dengan jumlah episode lebih panjang (misalnya Shounen seperti One Piece) cenderung memiliki jumlah anggota (member) yang lebih tinggi. Ini bisa menjadi sinyal popularitas dan daya tarik seri panjang.
+### Exploratory Data Analysis (EDA)
+#### Menampilkan info data Anime.csv
+| Kolom      | Non-Null Count | Tipe Data |
+| :--------- | :------------- | :-------- |
+| `anime_id` | 12294          | `int64`   |
+| `name`     | 12294          | `object`  |
+| `genre`    | 12232          | `object`  |
+| `type`     | 12269          | `object`  |
+| `episodes` | 12294          | `object`  |
+| `rating`   | 12064          | `float64` |
+| `members`  | 12294          | `int64`   |
+
+**Ringkasan Tipe Data:**
+* `float64`: 1 kolom
+* `int64`: 2 kolom
+* `object`: 4 kolom
+
+**Total Memori:** 672.5+ KB
+
+#### Menampilkan info data Rating.csv
+| Kolom     | Tipe Data |
+| :-------- | :-------- |
+| `user_id` | `int64`   |
+| `anime_id`| `int64`   |
+| `rating`  | `int64`   |
+
+**Ringkasan Tipe Data:**
+* `int64`: 3 kolom
+
+**Total Memori:** 178.8 MB
+
+#### Menampilkan Statistik Deskriptif Anime.csv
+![image](https://github.com/user-attachments/assets/e26dfd07-9a2a-4a5a-9c9c-adb0278c22d9)
+
+Dataset anime memiliki 12.017 data lengkap untuk kolom rating dan members. Rata-rata rating anime sekitar 6,48 dengan variasi yang cukup kecil (std 1,02), nilai rating terendah 1,67 dan tertinggi sempurna 10. Jumlah anggota komunitas (members) bervariasi sangat luas, dengan rata-rata sekitar 18.349, dari minimum 12 hingga lebih dari 1 juta, menunjukkan adanya anime yang sangat populer dan yang kurang dikenal. Sebaran jumlah anggota ini sangat besar dengan standar deviasi tinggi (55.372), menandakan variasi signifikan dalam popularitas anime.
+
+
+#### Menampilkan Statistik Deskriptif Rating.csv
+![image](https://github.com/user-attachments/assets/0cd3e1bd-a7a9-4be5-aae5-be50a490d5f1)
+
+Statistik deskriptif untuk kolom rating pada dataset interaksi pengguna menunjukkan terdapat 7.813.737 data dengan rata-rata rating sekitar 6,14 dari skala 1 hingga 10. Rating memiliki variasi yang cukup besar dengan standar deviasi 3,73, nilai minimum -1 (menandakan anime ditonton tanpa rating), dan nilai maksimum 10. Sebagian besar rating berada di kisaran 6 hingga 9, dengan median di angka 7, menunjukkan preferensi pengguna cenderung positif.
+
+
+#### Mengecek & Menampilkan Missing Value
+![image](https://github.com/user-attachments/assets/299e6343-bed7-48b8-a2c0-34a7802dacc3)
+
+Pada dataset anime, terdapat beberapa nilai yang hilang, yaitu 62 pada kolom genre, 25 pada kolom type, dan 230 pada kolom rating. Sementara itu, dataset rating tidak memiliki nilai yang hilang sama sekali, semua kolom user_id, anime_id, dan rating lengkap tanpa missing value.
+
+#### Mengecek & Menampilkan Data Duplicate
+![image](https://github.com/user-attachments/assets/42d94c8b-0df6-4fc2-98e2-59c3b0748cbe)
+
+Dataset anime tidak mengandung data duplikat sama sekali, sedangkan pada dataset rating ditemukan 1 baris duplikat. Dengan jumlah data yang sangat besar, keberadaan satu baris duplikat pada rating ini relatif kecil dan dapat dihapus untuk menjaga kualitas data.
+
+
+#### Visualisasi Top 10 Genre Anime
+![image](https://github.com/user-attachments/assets/d673475f-897e-402c-a7f2-73011002778e)
+
+Berdasarkan diagram batang "Top 10 Genre Anime", genre "Comedy" mendominasi dengan jumlah tertinggi (4645), diikuti oleh "Action" (2845) dan "Adventure" (2348). Selanjutnya, "Fantasy" dan "Sci-Fi" memiliki frekuensi yang mirip, dan secara bertahap menurun hingga genre "School" yang paling jarang muncul dalam daftar 10 teratas ini.
+
+
+#### Visualisasi Berdasarkan type Anime
+![image](https://github.com/user-attachments/assets/a2711f91-0183-495a-8aca-15baaa73312f)
+
+Berdasarkan diagram batang "Jumlah Anime berdasarkan Tipe", tipe anime "TV" merupakan yang paling banyak dengan total 3787, diikuti oleh "OVA" (3311) dan "Movie" (2348). Tipe "Special" memiliki jumlah yang lebih rendah (1676), dan kemudian secara signifikan menurun untuk tipe "ONA" (659) dan "Music" (488) yang merupakan jumlah terkecil dalam kategori ini.
+
 
 ## Data Preparation
 Tahapan data preparation dilakukan secara sistematis untuk menyiapkan dataset agar siap digunakan dalam pemodelan Content-Based Filtering dan Collaborative Filtering. Setiap langkah disusun berdasarkan urutan eksekusi di notebook dan dirancang untuk mengatasi permasalahan data seperti nilai hilang, data duplikat, atau format yang tidak sesuai kebutuhan model.
 ### Content-based Filtering
-1. Menghapus data anime tanpa genre
-Anime dengan nilai genre kosong dihapus karena informasi genre merupakan fitur utama dalam pendekatan berbasis konten.
-  - Alasan: Genre adalah dasar perhitungan kemiripan antar anime. Tanpa genre, anime tersebut tidak bisa diolah dengan TF-IDF.
-2. Mengisi nilai null dengan string kosong
-Nilai kosong pada kolom genre diisi dengan string '' agar tidak error saat proses transformasi teks.
-3. Memecah genre menjadi token
-Genre yang semula berbentuk string dipisah berdasarkan koma menggunakan split(', ') dan kemudian diekspansi menjadi format teks untuk vectorizer.
-4. Mengubah genre ke bentuk numerik menggunakan TF-IDF Vectorizer
-Menggunakan TfidfVectorizer dari Scikit-learn, genre dikonversi ke dalam bentuk vektor numerik berbasis bobot kemunculan.
-  - Alasan: TF-IDF mampu memberi bobot yang lebih tinggi pada genre yang jarang tetapi informatif, serta menurunkan bobot genre umum seperti "Action" yang sering muncul.
-5. Menghitung cosine similarity antar anime
-Cosine similarity dihitung dari hasil TF-IDF matrix untuk menentukan seberapa mirip satu anime dengan lainnya.
-  - Alasan: Cosine similarity umum digunakan untuk mengukur kemiripan antar vektor dalam ruang fitur berdimensi tinggi.
+1. Menghapus baris dengan genre kosong
+Langkah pertama adalah menghapus anime yang tidak memiliki informasi genre menggunakan dropna(subset=['genre']). Hanya data yang memiliki genre lengkap yang digunakan dalam proses content-based filtering.
+  - Alasan: Genre adalah satu-satunya fitur konten yang digunakan dalam TF-IDF, sehingga baris tanpa genre tidak dapat dihitung kemiripannya dan sebaiknya dihilangkan.
+
+2. Tokenisasi genre
+Genre pada setiap anime disimpan dalam format string dengan pemisah koma. Genre dipecah menjadi token menggunakan split(', ') untuk memudahkan transformasi ke dalam bentuk vektor teks.
+
+3. Transformasi genre ke TF-IDF vector
+Genre yang sudah bersih diubah menjadi representasi numerik menggunakan TfidfVectorizer. Teknik ini memberikan bobot lebih tinggi pada genre yang lebih unik, dan menurunkan bobot genre yang sering muncul.
+  - Alasan: TF-IDF membantu mengurangi pengaruh genre umum (seperti "Action") dan menekankan genre yang lebih spesifik dalam perhitungan kemiripan antar anime.
+
+4. Tidak dilakukan pengisian fillna('') lagi
+Karena baris dengan nilai NaN sudah dihapus pada langkah pertama, pengisian nilai kosong tidak diperlukan lagi pada data yang digunakan untuk model.
 
 ### Collaborative Filtering
-1. Menghapus nilai rating -1
-Rating dengan nilai -1 dihapus karena menandakan pengguna belum memberikan penilaian sebenarnya terhadap anime.
-- Alasan: Nilai -1 tidak mencerminkan preferensi nyata dan dapat mengganggu perhitungan kemiripan antar pengguna.
-2. Membuat matriks user-item
-Menggunakan pivot_table() dengan user_id sebagai baris dan anime_id sebagai kolom, serta nilai rating sebagai isi tabel.
-3. Menyelesaikan duplikat rating dengan agregasi (mean)
-Jika ada lebih dari satu rating untuk kombinasi user_id dan anime_id, nilai rata-rata diambil untuk menghindari error saat pivot.
+1. Menghapus nilai rating = -1
+Sebelum membentuk matriks user-item, seluruh baris dengan rating -1 dihapus dari rating.csv dan disimpan ke dalam dataframe ratings_clean.
+  - Alasan: Rating -1 bukanlah penilaian nyata dari pengguna, sehingga tidak relevan dan dapat mengganggu pembentukan pola pada model.
+
+2. Membuat user-item matrix dari ratings_clean
+Menggunakan pivot_table(), dibuat user-item matrix dengan user_id sebagai baris, anime_id sebagai kolom, dan rating sebagai nilai. Data yang digunakan sepenuhnya berasal dari ratings_clean, memastikan hanya rating valid yang diproses.
+
+3. Menangani duplikat kombinasi user_id dan anime_id
+Jika satu pengguna memberikan lebih dari satu rating untuk satu anime, maka digunakan agregasi mean untuk menghitung rata-ratanya dalam proses pivot.
+
 4. Mengisi nilai kosong dengan 0
-NaN diisi dengan nol karena model KNN tidak bisa memproses nilai kosong.
-- Alasan: Dalam model berbasis jarak seperti KNN, semua nilai harus numerik. 0 menandakan tidak ada interaksi (belum menonton).
-5. Mengubah matriks ke sparse matrix
-Dengan scipy.sparse.csr_matrix, user-item matrix diubah menjadi format sparse untuk efisiensi memori.
-- Alasan: Sebagian besar nilai dalam matriks adalah 0 (sparse), sehingga format sparse lebih efisien untuk penyimpanan dan komputasi.
-6. Membuat model KNN berbasis cosine similarity
-Model KNN dilatih dengan algoritma brute-force dan metrik cosine untuk mengukur kesamaan antar pengguna.
+Matriks hasil pivot biasanya mengandung banyak nilai kosong (NaN). Nilai ini diisi dengan 0 sebagai penanda bahwa pengguna belum memberikan rating terhadap anime tersebut.
+  - Alasan: Model KNN yang akan digunakan membutuhkan matriks numerik penuh tanpa nilai kosong.
+
+5. Mengonversi ke sparse matrix
+Karena sebagian besar elemen bernilai nol (sparse), matriks diubah ke format scipy.sparse.csr_matrix untuk efisiensi memori dan komputasi.
+  - Catatan: Langkah pelatihan model KNN dipindahkan ke bagian Modeling, sesuai dengan fase pembuatan model.
 
 ## Modeling
 Pada tahap ini, dua jenis model sistem rekomendasi dibangun untuk menyelesaikan permasalahan pencarian anime yang relevan: Content-Based Filtering dan Collaborative Filtering. Masing-masing model menghasilkan rekomendasi top-N anime sebagai output.
