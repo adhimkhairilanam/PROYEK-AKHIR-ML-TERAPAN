@@ -175,71 +175,104 @@ Karena sebagian besar elemen bernilai nol (sparse), matriks diubah ke format sci
 Pada tahap ini, dua jenis model sistem rekomendasi dibangun untuk menyelesaikan permasalahan pencarian anime yang relevan: Content-Based Filtering dan Collaborative Filtering. Masing-masing model menghasilkan rekomendasi top-N anime sebagai output.
 
 ### Content-based Filtering
-Pendekatan:
-Model ini membandingkan kemiripan konten antar anime berdasarkan informasi genre. Proses diawali dengan mentransformasikan genre menjadi vektor menggunakan TF-IDF Vectorizer, kemudian menghitung cosine similarity antar anime.
-**Langkah:**
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+**Algoritma:**
+Content-Based Filtering menggunakan pendekatan kemiripan teks (text similarity) berbasis genre anime. Model ini mengandalkan perhitungan cosine similarity antar vektor representasi genre yang dibentuk melalui TF-IDF.
 
-tfidf = TfidfVectorizer()
+**Tahapan Pemodelan:**
+1. Persiapan Data:
+- Dataset anime.csv difilter untuk menghapus baris dengan nilai kosong pada kolom genre.
+- Genre diubah ke format teks bersih dan digunakan sebagai fitur utama.
+2. TF-IDF Vectorization:
+- Genre diubah menjadi vektor numerik dengan TfidfVectorizer dari Scikit-learn:
+tfidf = TfidfVectorizer(token_pattern=r'[^, ]+', stop_words='english')
 tfidf_matrix = tfidf.fit_transform(anime['genre'].fillna(''))
-cosine_sim = cosine_similarity(tfidf_matrix)
-
+3. Perhitungan Cosine Similarity:
+- Cosine similarity dihitung dari hasil vektor TF-IDF:
+cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 **Fungsi Rekomendasi:**
-def get_content_based_recommendations(title, top_n=10):
+def get_content_based_recommendations(title, cosine_sim=cosine_sim, anime=anime, top_n=10):
+    if title not in anime['name'].values:
+        return f"Anime dengan judul '{title}' tidak ditemukan."
     idx = anime[anime['name'] == title].index[0]
     sim_scores = list(enumerate(cosine_sim[idx]))
-    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:top_n+1]
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    sim_scores = sim_scores[1:top_n+1]
     anime_indices = [i[0] for i in sim_scores]
-    return anime.iloc[anime_indices][['name', 'genre']]
+    return anime.iloc[anime_indices][['anime_id', 'name']]
+
+print('Rekomendasi untuk "Naruto":')
+print(get_content_based_recommendations('Naruto'))
     
 **Contoh Output (Top-5 untuk “Naruto”):**
-| Judul Anime         | Genre                        |
-| ------------------- | ---------------------------- |
-| Naruto: Shippuuden  | Action, Comedy, Martial Arts |
-| Bleach              | Action, Supernatural         |
-| One Piece           | Action, Adventure, Comedy    |
-| Hunter x Hunter     | Action, Adventure, Shounen   |
-| Fullmetal Alchemist | Action, Fantasy, Military    |
+| anime\_id | Judul Anime                                             |
+| --------- | ------------------------------------------------------- |
+| 1735      | Naruto: Shippuuden                                      |
+| 20        | Naruto                                                  |
+| 32365     | Boruto: Naruto the Movie – Naruto ga Hokage ni Natta Hi |
+| 10075     | Naruto x UT                                             |
+| 8246      | Naruto: Shippuuden Movie 4 – The Lost Tower             |
+
+**Parameter yang digunakan:**
+
+| Parameter       | Nilai                                                       |
+| --------------- | ----------------------------------------------------------- |
+| `top_n`         | 10 (dapat disesuaikan oleh pengguna)                        |
+| `token_pattern` | `r'[^, ]+'` (tokenisasi berdasarkan koma/spasi)             |
+| `stop_words`    | `'english'` (menghapus kata-kata umum dalam bahasa Inggris) |
+| `metric`        | `cosine` (kemiripan antar vektor genre)                     |
+
 
 **Kelebihan:**
-- Cocok untuk pengguna baru (cold-start) karena hanya butuh preferensi konten awal.
-- Cepat dan efisien karena tidak tergantung pada interaksi pengguna lain.
+- Tidak membutuhkan interaksi pengguna (cocok untuk cold-start).
+- Rekomendasi transparan karena didasarkan pada fitur eksplisit (genre).
+- Mudah ditafsirkan dan cepat dihitung.
 **Kekurangan:**
-- Terbatas pada fitur konten (genre); tidak mempertimbangkan rating atau preferensi pengguna yang sebenarnya.
-- Genre umum (seperti "Action") bisa menyebabkan over-rekomendasi terhadap anime populer.
+- Hanya merekomendasikan anime yang mirip secara konten (genre), sehingga kurang bervariasi.
+- Tidak mempertimbangkan kualitas atau rating yang diberikan pengguna.
+- Tidak bisa menangkap kesukaan pengguna di luar pola konten yang terlihat.
 
 ### Collaborative Filtering
-Pendekatan:
-Model ini membangun user-item matrix dari data rating dan menggunakan algoritma K-Nearest Neighbors (KNN) untuk mencari pengguna dengan pola rating serupa. Rekomendasi diberikan berdasarkan item yang disukai oleh pengguna-pengguna serupa.
+**Algoritma:**
+K-Nearest Neighbors (KNN) berbasis cosine similarity antar pengguna
 
-**Langkah:**
-from sklearn.neighbors import NearestNeighbors
-import scipy.sparse as sp
+**Tahapan Pemodelan:**
+1. Membersihkan data rating.csv dari nilai -1, menghasilkan ratings_clean.
+2. Membentuk user-item matrix dari data yang bersih menggunakan pivot_table() dengan agregasi mean.
+3. Mengisi nilai kosong dengan 0 dan mengubah ke sparse matrix (csr_matrix) untuk efisiensi memori.
+4. Melatih model KNN menggunakan NearestNeighbors dari Scikit-learn dengan metrik cosine.
 
-user_item_matrix = ratings.pivot_table(index='user_id', columns='anime_id', values='rating', aggfunc='mean').fillna(0)
-sparse_matrix = sp.csr_matrix(user_item_matrix.values)
-
+**Kode Implementasi:**
 knn = NearestNeighbors(metric='cosine', algorithm='brute')
 knn.fit(sparse_matrix)
 
 **Fungsi Rekomendasi:**
-def get_collaborative_recommendations(user_id, top_n=10):
+def get_collaborative_recommendations(user_id, user_item_matrix=user_item_matrix, knn=knn, anime=anime, top_n=10):
     user_idx = user_item_matrix.index.get_loc(user_id)
     distances, indices = knn.kneighbors(sparse_matrix[user_idx], n_neighbors=11)
     similar_users = user_item_matrix.iloc[indices.flatten()[1:]]
-    scores = similar_users.mean(axis=0).sort_values(ascending=False)
-    recommended_ids = scores.head(top_n).index
-    return anime[anime['anime_id'].isin(recommended_ids)][['name', 'genre']]
+    anime_scores = similar_users.mean(axis=0)
+    top_anime = anime_scores.sort_values(ascending=False).head(top_n)
+    anime_ids = top_anime.index
+    return anime[anime['anime_id'].isin(anime_ids)][['anime_id', 'name']].drop_duplicates()
+
+print('Rekomendasi untuk user_id = 1:')
+print(get_collaborative_recommendations(1))
 
 **Contoh Output (Top-5 untuk user_id=1):**
-| Judul Anime     | Genre                           |
-| --------------- | ------------------------------- |
-| Death Note      | Mystery, Supernatural, Thriller |
-| Code Geass      | Mecha, Military, Psychological  |
-| Steins;Gate     | Sci-Fi, Thriller                |
-| Attack on Titan | Action, Drama, Fantasy          |
-| Tokyo Ghoul     | Action, Horror, Supernatural    |
+
+| anime\_id | Judul Anime            |
+| --------- | ---------------------- |
+| 15451     | High School DxD New    |
+| 11757     | Sword Art Online       |
+| 11617     | High School DxD        |
+| 15583     | Date A Live            |
+| 8074      | Highschool of the Dead |
+
+
+**Parameter yang digunakan:**
+- n_neighbors = 11 (termasuk user itu sendiri)
+- metric = 'cosine'
+- algorithm = 'brute' (karena dataset cukup besar dan sparse)
 
 **Kelebihan:**
 - Memberikan rekomendasi berdasarkan selera pengguna secara nyata, bukan sekadar konten.
@@ -248,7 +281,18 @@ def get_collaborative_recommendations(user_id, top_n=10):
 - Tidak bekerja dengan baik untuk pengguna baru yang belum memberikan rating (cold-start).
 - Matriks rating yang sangat sparse bisa mengurangi performa kemiripan.
 
-Kedua pendekatan memberikan hasil yang relevan dalam konteks berbeda. Content-based cocok untuk pengguna baru atau preferensi berbasis genre, sedangkan collaborative filtering memberikan personalisasi yang lebih tinggi berdasarkan pola komunitas. Kombinasi keduanya dalam sistem hybrid berpotensi menghasilkan rekomendasi yang lebih kuat dan akurat.
+**Pemilihan Model Terbaik**
+Dalam proyek ini, dua algoritma sistem rekomendasi telah berhasil dibangun dan diuji:
+- Content-Based Filtering – memberikan rekomendasi berdasarkan kemiripan genre anime.
+- Collaborative Filtering (User-Based KNN) – memberikan rekomendasi berdasarkan kesamaan preferensi antar pengguna berdasarkan rating.
+
+**Model Terbaik: Collaborative Filtering**
+Alasan pemilihan:
+- Lebih personal: Mampu memahami kebiasaan dan selera pengguna secara lebih mendalam berdasarkan perilaku nyata (rating).
+- Relevansi tinggi: Hasil rekomendasi mencakup anime dengan skor tinggi dari komunitas pengguna serupa, menunjukkan kualitas dan relevansi.
+- Kualitas rekomendasi terbukti: Anime yang direkomendasikan memiliki rating komunitas yang kuat, meskipun bukan dari genre yang sama persis.
+
+Sebaliknya, Content-Based Filtering hanya menyarankan anime yang sangat mirip secara genre, yang cenderung terbatas dan kurang variasi—khususnya bagi pengguna yang ingin eksplorasi atau tidak hanya menyukai satu tipe genre.
 
 ## Evaluation
 Evaluasi dilakukan untuk mengukur kualitas dan relevansi rekomendasi yang diberikan oleh sistem. Karena proyek ini mencakup dua pendekatan berbeda, masing-masing menggunakan metrik evaluasi yang sesuai dengan karakternya:
