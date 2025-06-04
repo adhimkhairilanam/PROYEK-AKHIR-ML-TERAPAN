@@ -300,43 +300,61 @@ Evaluasi dilakukan untuk mengukur kualitas dan relevansi rekomendasi yang diberi
 ### Content-based Filtering
 1. Metrik yang Digunakan:
 - Genre Match Percentage
+
 2. Definisi:
-- Metrik ini mengukur persentase anime yang direkomendasikan yang memiliki genre yang sama atau mencakup genre dari anime input.
-3. Formula:
-  Genre Match Percentage = (Jumlah rekomendasi dengan genre cocok / Total rekomendasi) × 100%
-4. Cara Kerja:
-- Ambil set genre dari anime input.
-- Bandingkan dengan genre setiap anime dalam daftar rekomendasi.
-- Jika semua genre dari input terdapat di anime rekomendasi, maka dihitung sebagai match.
-- Hasil dihitung sebagai persentase dari jumlah total rekomendasi (top-N).
-5. Contoh Hasil:
-Untuk anime input "Naruto", rekomendasi yang dihasilkan termasuk Bleach, Naruto Shippuden, dan One Piece. Semua memiliki genre Action, Adventure, dan Shounen, sama dengan anime input.
-6. Output:
-  Genre Match Percentage untuk 'Naruto': 100%
+- Persentase anime yang direkomendasikan yang memiliki genre yang sama atau mencakup semua genre dari anime input.
+
+3.Formula:
+- Genre Match Percentage = (Jumlah rekomendasi yang match genre / total rekomendasi) × 100%
+
+4. Hasil Evaluasi Aktual:
+Untuk anime input "Naruto", sistem menghasilkan 10 rekomendasi. Setelah dicek dengan fungsi genre_match_percentage('Naruto', top_n=10), ditemukan bahwa 7 dari 10 rekomendasi memiliki genre lengkap yang sesuai dengan anime input.
+
+Output:
+Genre Match Percentage untuk 'Naruto': 70.0%
+
+Interpretasi:
+Sebagian besar rekomendasi memiliki genre yang sesuai, namun tidak seluruhnya. Hal ini menunjukkan bahwa sistem masih memberikan hasil relevan, tetapi tidak selalu identik secara konten penuh.
 
 ### Collaborative Filtering
 1. Metrik yang Digunakan:
 - Average Rating Score
+
 2. Definisi:
-- Metrik ini menghitung rata-rata rating dari anime yang direkomendasikan kepada pengguna, berdasarkan rating publik dari seluruh pengguna.
+- Rata-rata rating publik dari anime yang direkomendasikan untuk user tertentu.
+
 3. Formula:
-  Average Rating = (Σ rating untuk anime rekomendasi) / jumlah anime yang direkomendasikan
-4. Cara Kerja:
-- Ambil ID anime dari hasil rekomendasi model collaborative filtering untuk user tertentu.
-- Cari semua rating publik untuk anime tersebut dari rating.csv.
-- Hitung rata-rata rating sebagai indikator seberapa "disukai" rekomendasi tersebut.
-5. Contoh Hasil:
-Untuk pengguna dengan user_id = 1, sistem merekomendasikan anime seperti:
-- Death Note – rating rata-rata: 8.7
-- Code Geass – rating rata-rata: 8.6
-- Attack on Titan – rating rata-rata: 8.5
-6. Output:
-  Average Rating Score untuk rekomendasi user 1: 8.6
-7. Interpretasi:
-Rata-rata rating > 8 menunjukkan bahwa anime yang direkomendasikan secara umum sangat disukai oleh komunitas pengguna, sehingga rekomendasi dianggap berkualitas tinggi dan relevan.
+Average Rating Score = (Σ rata-rata rating tiap anime) / jumlah anime direkomendasikan
+
+Rekomendasi Aktual untuk user_id = 1:
+
+| anime\_id | Judul Anime            |
+| --------- | ---------------------- |
+| 15451     | High School DxD New    |
+| 11757     | Sword Art Online       |
+| 11617     | High School DxD        |
+| 15583     | Date A Live            |
+| 8074      | Highschool of the Dead |
+
+
+Rata-rata rating komunitas:
+- High School DxD New: ~6.7
+- Sword Art Online: ~7.3
+- High School DxD: ~6.9
+- Date A Live: ~6.4
+- Highschool of the Dead: ~5.5
+
+Output:
+Average Rating Score untuk user_id = 1: 6.37
+
+Interpretasi:
+Rata-rata rating komunitas dari anime yang direkomendasikan sekitar 6.37, yang berarti masih termasuk kategori cukup baik, meskipun tidak luar biasa. Nilai ini realistis dan mencerminkan selera pengguna berdasarkan kesamaan perilaku pengguna lain, bukan berdasarkan rating tertinggi global.
+
 
 ## Kesimpulan Evaluasi
-| Pendekatan              | Metrik Evaluasi        | Hasil Evaluasi | Interpretasi                              |
-| ----------------------- | ---------------------- | -------------- | ----------------------------------------- |
-| Content-Based Filtering | Genre Match Percentage | 100%           | Rekomendasi sangat sesuai dari sisi genre |
-| Collaborative Filtering | Average Rating Score   | 8.6            | Rekomendasi populer dan disukai pengguna  |
+
+| Pendekatan              | Metrik Evaluasi        | Hasil Evaluasi | Interpretasi                                        |
+| ----------------------- | ---------------------- | -------------- | --------------------------------------------------- |
+| Content-Based Filtering | Genre Match Percentage | 70.0%          | Sebagian besar rekomendasi cocok secara genre       |
+| Collaborative Filtering | Average Rating Score   | 6.37           | Rekomendasi mencerminkan preferensi pengguna serupa |
+
