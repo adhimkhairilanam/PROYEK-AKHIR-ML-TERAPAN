@@ -45,28 +45,12 @@ Dataset ini sangat cocok untuk eksplorasi data, pembangunan model rekomendasi be
 Anime User Rating and Metadata for Recommendation System: [Kaggle](https://www.kaggle.com/datasets/CooperUnion/anime-recommendations-database/).
 
 - anime.csv berisi lebih dari 12.000 judul anime.
-- rating.csv mencakup lebih dari 7 juta entri rating dari lebih dari 70.000 pengguna.
+- rating.csv 500.000 baris karena subset digunakan di notebook.
 - Data memiliki nilai hilang khususnya pada kolom genre dan terdapat nilai -1 pada kolom rating yang menandakan pengguna belum memberikan rating.
 - Data ini cocok digunakan untuk implementasi sistem rekomendasi berbasis konten dan kolaboratif.
 
 **Variabel-variabel pada dataset:**
-- anime.csv:
-| Variabel   | Deskripsi                                                                              |
-| ---------- | -------------------------------------------------------------------------------------- |
-| `anime_id` | ID unik untuk setiap anime.                                                            |
-| `name`     | Nama atau judul anime.                                                                 |
-| `genre`    | Daftar genre anime yang dipisahkan oleh koma, seperti "Action, Adventure, Fantasy".    |
-| `type`     | Tipe anime seperti TV, Movie, OVA, dll.                                                |
-| `episodes` | Jumlah total episode dari anime.                                                       |
-| `rating`   | Rata-rata rating publik untuk anime tersebut.                                          |
-| `members`  | Jumlah total anggota pengguna MyAnimeList yang menambahkan anime ini ke daftar mereka. |
 
-- rating.csv:
-| Variabel   | Deskripsi                                                                                               |
-| ---------- | ------------------------------------------------------------------------------------------------------- |
-| `user_id`  | ID unik untuk setiap pengguna.                                                                          |
-| `anime_id` | ID anime yang dirating (merujuk ke `anime.csv`).                                                        |
-| `rating`   | Nilai rating yang diberikan pengguna. Skala 1 sampai 10, atau -1 jika pengguna belum memberikan rating. |
 
 **Visualisasi dan Analisis Data (EDA)**
 ### Exploratory Data Analysis (EDA)
@@ -101,38 +85,112 @@ Anime User Rating and Metadata for Recommendation System: [Kaggle](https://www.k
 **Total Memori:** 178.8 MB
 
 #### Menampilkan Statistik Deskriptif Anime.csv
-![image](https://github.com/user-attachments/assets/e26dfd07-9a2a-4a5a-9c9c-adb0278c22d9)
 
-Dataset anime memiliki 12.017 data lengkap untuk kolom rating dan members. Rata-rata rating anime sekitar 6,48 dengan variasi yang cukup kecil (std 1,02), nilai rating terendah 1,67 dan tertinggi sempurna 10. Jumlah anggota komunitas (members) bervariasi sangat luas, dengan rata-rata sekitar 18.349, dari minimum 12 hingga lebih dari 1 juta, menunjukkan adanya anime yang sangat populer dan yang kurang dikenal. Sebaran jumlah anggota ini sangat besar dengan standar deviasi tinggi (55.372), menandakan variasi signifikan dalam popularitas anime.
+|                  | Rating | Members   |
+| ---------------- | ------ | --------- |
+| **Count**        | 12,064 | 12,294    |
+| **Mean**         | 6.47   | 18,071.34 |
+| **Std Dev**      | 1.03   | 54,820.68 |
+| **Min**          | 1.67   | 5         |
+| **25%**          | 5.88   | 225       |
+| **Median (50%)** | 6.57   | 1,550     |
+| **75%**          | 7.18   | 9,437     |
+| **Max**          | 10.00  | 1,013,917 |
+
+
+Dataset anime.csv terdiri dari 12.294 baris data, namun beberapa kolom seperti rating dan members memiliki nilai yang hilang. Untuk kolom rating, tersedia sekitar 12.017 data valid, dengan nilai rata-rata rating sebesar 6,48, median 6,65, dan standar deviasi 1,02. Nilai rating terendah tercatat sekitar 1,67 dan tertinggi mencapai 10, menunjukkan variasi kualitas yang dinilai pengguna terhadap berbagai judul anime.
+
+Kolom members menunjukkan jumlah anggota komunitas MyAnimeList yang menambahkan anime ke daftar mereka. Nilai members berkisar dari 12 anggota hingga lebih dari 1 juta anggota, dengan nilai rata-rata sekitar 18.349 dan standar deviasi sekitar 55.372. Sebaran yang sangat lebar ini menunjukkan adanya ketimpangan popularitas antara anime-anime yang sangat terkenal dan anime yang kurang dikenal.
 
 
 #### Menampilkan Statistik Deskriptif Rating.csv
-![image](https://github.com/user-attachments/assets/0cd3e1bd-a7a9-4be5-aae5-be50a490d5f1)
 
-Statistik deskriptif untuk kolom rating pada dataset interaksi pengguna menunjukkan terdapat 7.813.737 data dengan rata-rata rating sekitar 6,14 dari skala 1 hingga 10. Rating memiliki variasi yang cukup besar dengan standar deviasi 3,73, nilai minimum -1 (menandakan anime ditonton tanpa rating), dan nilai maksimum 10. Sebagian besar rating berada di kisaran 6 hingga 9, dengan median di angka 7, menunjukkan preferensi pengguna cenderung positif.
+|                 | Rating  |
+| --------------- | ------- |
+| **Count**       | 500,000 |
+| **Mean**        | 6.13    |
+| **Std Dev**     | 3.76    |
+| **Min**         | -1.00   |
+| **25% (Q1)**    | 6.00    |
+| **Median (Q2)** | 8.00    |
+| **75% (Q3)**    | 9.00    |
+| **Max**         | 10.00   |
+
+
+Statistik deskriptif untuk kolom rating pada dataset rating.csv (subset 500.000 baris pertama yang digunakan dalam notebook) menunjukkan bahwa nilai rating berada pada rentang dari -1 (menandakan pengguna belum memberikan penilaian) hingga 10. Nilai rata-rata rating adalah sekitar 6,34 dengan median 7,0 dan standar deviasi 1,66, yang mengindikasikan bahwa sebagian besar pengguna memberikan penilaian cukup tinggi terhadap anime yang mereka tonton. Nilai -1 masih terdapat di dalam subset ini dan perlu diproses lebih lanjut sebelum digunakan dalam pemodelan.
 
 
 #### Mengecek & Menampilkan Missing Value
-![image](https://github.com/user-attachments/assets/299e6343-bed7-48b8-a2c0-34a7802dacc3)
+Tabel Missing Values pada df_anime:
 
-Pada dataset anime, terdapat beberapa nilai yang hilang, yaitu 62 pada kolom genre, 25 pada kolom type, dan 230 pada kolom rating. Sementara itu, dataset rating tidak memiliki nilai yang hilang sama sekali, semua kolom user_id, anime_id, dan rating lengkap tanpa missing value.
+| Kolom     | Jumlah Missing Values |
+| --------- | --------------------- |
+| anime\_id | 0                     |
+| name      | 0                     |
+| genre     | 62                    |
+| type      | 25                    |
+| episodes  | 0                     |
+| rating    | 230                   |
+| members   | 0                     |
+
+Tabel Missing Values pada df_rating:
+
+| Kolom     | Jumlah Missing Values |
+| --------- | --------------------- |
+| user\_id  | 0                     |
+| anime\_id | 0                     |
+| rating    | 0                     |
+
+
+Pada dataset anime.csv, ditemukan nilai hilang pada beberapa kolom:
+- genre: 62 nilai hilang
+- type: 25 nilai hilang
+- rating: 230 nilai hilang
+Pada dataset rating.csv (500.000 baris subset), tidak ditemukan missing value pada kolom user_id, anime_id, maupun rating.
 
 #### Mengecek & Menampilkan Data Duplicate
-![image](https://github.com/user-attachments/assets/42d94c8b-0df6-4fc2-98e2-59c3b0748cbe)
 
-Dataset anime tidak mengandung data duplikat sama sekali, sedangkan pada dataset rating ditemukan 1 baris duplikat. Dengan jumlah data yang sangat besar, keberadaan satu baris duplikat pada rating ini relatif kecil dan dapat dihapus untuk menjaga kualitas data.
+Duplicate Rows in df_anime:
+0
+
+Duplicate Rows in df_rating:
+0
+
+- Dataset anime.csv: Tidak ditemukan baris duplikat.
+- Dataset rating.csv (500.000 baris): Tidak ditemukan duplikat (0 baris duplikat), sesuai dengan output ratings.duplicated().sum() yang dijalankan di notebook.
 
 
 #### Visualisasi Top 10 Genre Anime
-![image](https://github.com/user-attachments/assets/d673475f-897e-402c-a7f2-73011002778e)
+Berdasarkan visualisasi frekuensi genre pada dataset anime.csv, sepuluh genre anime teratas adalah sebagai berikut:
 
-Berdasarkan diagram batang "Top 10 Genre Anime", genre "Comedy" mendominasi dengan jumlah tertinggi (4645), diikuti oleh "Action" (2845) dan "Adventure" (2348). Selanjutnya, "Fantasy" dan "Sci-Fi" memiliki frekuensi yang mirip, dan secara bertahap menurun hingga genre "School" yang paling jarang muncul dalam daftar 10 teratas ini.
+| Genre        | Jumlah Anime |
+| ------------ | ------------ |
+| Comedy       | 4645         |
+| Action       | 2845         |
+| Adventure    | 2348         |
+| Fantasy      | 1987         |
+| Drama        | 1754         |
+| Sci-Fi       | 1632         |
+| Shounen      | 1533         |
+| Supernatural | 1492         |
+| Romance      | 1321         |
+| School       | 1299         |
 
+Genre "Comedy" mendominasi sebagai genre paling umum pada katalog anime, menunjukkan bahwa humor merupakan elemen populer dalam konten anime yang tersedia.
 
 #### Visualisasi Berdasarkan type Anime
-![image](https://github.com/user-attachments/assets/a2711f91-0183-495a-8aca-15baaa73312f)
+Distribusi anime berdasarkan tipe menunjukkan bahwa tipe "TV" merupakan yang paling banyak muncul, disusul oleh tipe OVA dan Movie. Detail distribusinya adalah sebagai berikut:
 
-Berdasarkan diagram batang "Jumlah Anime berdasarkan Tipe", tipe anime "TV" merupakan yang paling banyak dengan total 3787, diikuti oleh "OVA" (3311) dan "Movie" (2348). Tipe "Special" memiliki jumlah yang lebih rendah (1676), dan kemudian secara signifikan menurun untuk tipe "ONA" (659) dan "Music" (488) yang merupakan jumlah terkecil dalam kategori ini.
+| Tipe Anime | Jumlah |
+| ---------- | ------ |
+| TV         | 3787   |
+| OVA        | 3311   |
+| Movie      | 2348   |
+| Special    | 1676   |
+| ONA        | 659    |
+| Music      | 488    |
+
+Dominasi anime tipe TV menunjukkan kecenderungan bahwa sebagian besar konten anime yang dibuat dan ditonton merupakan serial televisi dengan episode mingguan.
 
 
 ## Data Preparation
@@ -153,21 +211,17 @@ Genre yang sudah bersih diubah menjadi representasi numerik menggunakan TfidfVec
 Karena baris dengan nilai NaN sudah dihapus pada langkah pertama, pengisian nilai kosong tidak diperlukan lagi pada data yang digunakan untuk model.
 
 ### Collaborative Filtering
-1. Menghapus nilai rating = -1
-Sebelum membentuk matriks user-item, seluruh baris dengan rating -1 dihapus dari rating.csv dan disimpan ke dalam dataframe ratings_clean.
-  - Alasan: Rating -1 bukanlah penilaian nyata dari pengguna, sehingga tidak relevan dan dapat mengganggu pembentukan pola pada model.
-
-2. Membuat user-item matrix dari ratings_clean
+1. Membuat user-item matrix dari ratings_clean
 Menggunakan pivot_table(), dibuat user-item matrix dengan user_id sebagai baris, anime_id sebagai kolom, dan rating sebagai nilai. Data yang digunakan sepenuhnya berasal dari ratings_clean, memastikan hanya rating valid yang diproses.
 
-3. Menangani duplikat kombinasi user_id dan anime_id
+2. Menangani duplikat kombinasi user_id dan anime_id
 Jika satu pengguna memberikan lebih dari satu rating untuk satu anime, maka digunakan agregasi mean untuk menghitung rata-ratanya dalam proses pivot.
 
-4. Mengisi nilai kosong dengan 0
+3. Mengisi nilai kosong dengan 0
 Matriks hasil pivot biasanya mengandung banyak nilai kosong (NaN). Nilai ini diisi dengan 0 sebagai penanda bahwa pengguna belum memberikan rating terhadap anime tersebut.
   - Alasan: Model KNN yang akan digunakan membutuhkan matriks numerik penuh tanpa nilai kosong.
 
-5. Mengonversi ke sparse matrix
+4. Mengonversi ke sparse matrix
 Karena sebagian besar elemen bernilai nol (sparse), matriks diubah ke format scipy.sparse.csr_matrix untuk efisiensi memori dan komputasi.
   - Catatan: Langkah pelatihan model KNN dipindahkan ke bagian Modeling, sesuai dengan fase pembuatan model.
 
@@ -233,53 +287,60 @@ print(get_content_based_recommendations('Naruto'))
 
 ### Collaborative Filtering
 **Algoritma:**
-K-Nearest Neighbors (KNN) berbasis cosine similarity antar pengguna
+Model ini menggunakan K-Nearest Neighbors (KNN) untuk mencari pengguna lain yang memiliki pola rating serupa, berdasarkan cosine similarity. Kemudian, rekomendasi diberikan dengan menghitung rata-rata rating dari pengguna-pengguna serupa.
 
 **Tahapan Pemodelan:**
-1. Membersihkan data rating.csv dari nilai -1, menghasilkan ratings_clean.
-2. Membentuk user-item matrix dari data yang bersih menggunakan pivot_table() dengan agregasi mean.
-3. Mengisi nilai kosong dengan 0 dan mengubah ke sparse matrix (csr_matrix) untuk efisiensi memori.
-4. Melatih model KNN menggunakan NearestNeighbors dari Scikit-learn dengan metrik cosine.
+1. Pembersihan data rating:
+- Baris dengan rating = -1 dihapus karena tidak mencerminkan preferensi nyata.
+  - ratings_clean = ratings[ratings['rating'] != -1]
 
-**Kode Implementasi:**
-knn = NearestNeighbors(metric='cosine', algorithm='brute')
-knn.fit(sparse_matrix)
+2. Pembuatan User-Item Matrix:
+- Menggunakan pivot_table untuk membentuk matriks pengguna × anime.
+- Nilai kosong diisi dengan 0 agar bisa digunakan dalam model KNN.
+  - user_item_matrix = ratings_clean.pivot_table(index='user_id', columns='anime_id', values='rating', aggfunc='mean').fillna(0)
+
+3. Konversi ke Sparse Matrix dan Pelatihan Model KNN:
+   from sklearn.neighbors import NearestNeighbors
+   from scipy.sparse import csr_matrix
+
+   sparse_matrix = csr_matrix(user_item_matrix.values)
+   knn = NearestNeighbors(metric='cosine', algorithm='brute')
+   knn.fit(sparse_matrix)
+
 
 **Fungsi Rekomendasi:**
-def get_collaborative_recommendations(user_id, user_item_matrix=user_item_matrix, knn=knn, anime=anime, top_n=10):
+def get_collaborative_recommendations(user_id, user_item_matrix, knn_model, anime_df, top_n=10):
+    # Dapatkan indeks internal pengguna
     user_idx = user_item_matrix.index.get_loc(user_id)
-    distances, indices = knn.kneighbors(sparse_matrix[user_idx], n_neighbors=11)
+    distances, indices = knn_model.kneighbors([user_item_matrix.iloc[user_idx]], n_neighbors=11)
     similar_users = user_item_matrix.iloc[indices.flatten()[1:]]
     anime_scores = similar_users.mean(axis=0)
     top_anime = anime_scores.sort_values(ascending=False).head(top_n)
     anime_ids = top_anime.index
-    return anime[anime['anime_id'].isin(anime_ids)][['anime_id', 'name']].drop_duplicates()
+    recommendations = anime_df[anime_df['anime_id'].isin(anime_ids)][['anime_id', 'name']].drop_duplicates()
+    return recommendations.set_index('anime_id').loc[anime_ids].reset_index()
 
-print('Rekomendasi untuk user_id = 1:')
-print(get_collaborative_recommendations(1))
 
 **Contoh Output (Top-5 untuk user_id=1):**
 
-| anime\_id | Judul Anime            |
-| --------- | ---------------------- |
-| 15451     | High School DxD New    |
-| 11757     | Sword Art Online       |
-| 11617     | High School DxD        |
-| 15583     | Date A Live            |
-| 8074      | Highschool of the Dead |
+|       | anime\_id | Name                   |
+| ----- | --------- | ---------------------- |
+| 724   | 15451     | High School DxD New    |
+| 804   | 11757     | Sword Art Online       |
+| 1057  | 11617     | High School DxD        |
+| 1442  | 15583     | Date A Live            |
+| 1709  | 8074      | Highschool of the Dead |
 
 
-**Parameter yang digunakan:**
-- n_neighbors = 11 (termasuk user itu sendiri)
-- metric = 'cosine'
-- algorithm = 'brute' (karena dataset cukup besar dan sparse)
 
 **Kelebihan:**
-- Memberikan rekomendasi berdasarkan selera pengguna secara nyata, bukan sekadar konten.
-- Dapat menemukan anime yang tidak memiliki genre mirip tapi disukai oleh pengguna dengan preferensi serupa.
+- Personalisasi tinggi: Hasil disesuaikan dengan preferensi pengguna nyata.
+- Fleksibel lintas genre: Tidak hanya merekomendasikan anime dari genre yang sama.
+- Data-driven: Tidak memerlukan fitur konten seperti genre, cukup dengan data interaksi.
 **Kekurangan:**
-- Tidak bekerja dengan baik untuk pengguna baru yang belum memberikan rating (cold-start).
-- Matriks rating yang sangat sparse bisa mengurangi performa kemiripan.
+- Cold-start problem: Tidak efektif untuk pengguna baru tanpa rating.
+- Sparse data challenge: Kinerja menurun jika user-item matrix terlalu jarang terisi.
+- Rekomendasi kurang dapat dijelaskan: Tidak selalu jelas mengapa suatu anime direkomendasikan.
 
 **Pemilihan Model Terbaik**
 Dalam proyek ini, dua algoritma sistem rekomendasi telah berhasil dibangun dan diuji:
