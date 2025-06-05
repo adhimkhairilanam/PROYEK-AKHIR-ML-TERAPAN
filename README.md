@@ -42,8 +42,8 @@ Kedua pendekatan ini dipilih karena saling melengkapi: Content-Based Filtering u
 ## Data Understanding
 
 Dataset ini sangat cocok untuk eksplorasi data, pembangunan model rekomendasi berbasis pembelajaran mesin, serta pemahaman pola preferensi pengguna terhadap berbagai genre dan jenis anime.
-- Anime User Rating and Metadata for Recommendation System: [Kaggle](https://www.kaggle.com/datasets/CooperUnion/anime-recommendations-database/).
-Secara keseluruhan:
+Anime User Rating and Metadata for Recommendation System: [Kaggle](https://www.kaggle.com/datasets/CooperUnion/anime-recommendations-database/).
+
 - anime.csv berisi lebih dari 12.000 judul anime.
 - rating.csv mencakup lebih dari 7 juta entri rating dari lebih dari 70.000 pengguna.
 - Data memiliki nilai hilang khususnya pada kolom genre dan terdapat nilai -1 pada kolom rating yang menandakan pengguna belum memberikan rating.
